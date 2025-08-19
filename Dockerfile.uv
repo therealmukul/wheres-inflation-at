@@ -1,0 +1,45 @@
+# Dockerfile optimized for uv with pip fallback
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_CACHE_DIR=/tmp/uv-cache
+
+# Install system dependencies and uv
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv
+
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Create app directory
+WORKDIR /app
+
+# Copy dependency files and source code
+COPY --chown=appuser:appuser requirements.txt pyproject.toml ./
+COPY --chown=appuser:appuser app/ ./app/
+
+# Install dependencies with uv
+RUN echo "Installing dependencies with uv..." && \
+    # Install dependencies excluding the editable package \
+    grep -v "^-e" requirements.txt > /tmp/deps.txt && \
+    uv pip install --system -r /tmp/deps.txt && \
+    # Install the current package \
+    uv pip install --system -e .
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Use uv to run the application
+CMD ["uv", "run", "--no-dev", "python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
