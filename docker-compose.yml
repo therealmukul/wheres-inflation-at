@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  web:
+  backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
@@ -13,7 +13,7 @@ services:
       - LOG_LEVEL=INFO
     volumes:
       # Mount source code for development (optional)
-      - ./app:/app/app:ro
+      - ./backend/app:/app/app:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -21,10 +21,11 @@ services:
       retries: 3
       start_period: 40s
 
-  web-uv:
+  # Legacy service names for backward compatibility
+  web:
     build:
-      context: .
-      dockerfile: Dockerfile.uv
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8001:8000"
     environment:
@@ -33,7 +34,7 @@ services:
       - LOG_LEVEL=INFO
     volumes:
       # Mount source code for development (optional)
-      - ./app:/app/app:ro
+      - ./backend/app:/app/app:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s

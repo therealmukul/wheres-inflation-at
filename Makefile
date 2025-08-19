@@ -1,43 +1,45 @@
-# Python Web Service Template - Makefile
+# Backend-Frontend Reorganized Project - Makefile
 # Provides convenient commands for development workflow
 
-.PHONY: help install dev test run export-requirements clean
+.PHONY: help install dev test run backend-run export-requirements clean
 
 help: ## Show this help message
 	@echo "Available commands:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-install: ## Install production dependencies using uv
-	uv sync --no-dev
+install: ## Install production dependencies for backend using uv
+	cd backend && uv sync --no-dev
 
-dev: ## Install all dependencies (including dev) using uv
-	uv sync
+dev: ## Install all dependencies (including dev) for backend using uv
+	cd backend && uv sync
 
-test: ## Run tests using pytest
-	uv run pytest
+test: ## Run backend tests using pytest
+	cd backend && uv run pytest
 
-run: ## Run the FastAPI development server
-	uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+run: backend-run ## Run the FastAPI development server (alias for backend-run)
 
-export-requirements: ## Export requirements.txt from pyproject.toml for Docker/CI compatibility
-	uv export --no-dev --format requirements-txt > requirements.txt
-	@echo "# This file is auto-generated from pyproject.toml" > temp_req.txt
-	@echo "# Do not edit manually - run 'make export-requirements' to update" >> temp_req.txt
-	@echo "# Or use 'uv export --no-dev --format requirements-txt > requirements.txt'" >> temp_req.txt
-	@echo "" >> temp_req.txt
-	@cat requirements.txt >> temp_req.txt
-	@mv temp_req.txt requirements.txt
-	@echo "✓ Exported production requirements to requirements.txt"
+backend-run: ## Run the FastAPI backend development server
+	cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-export-dev-requirements: ## Export all requirements (including dev) to requirements-dev.txt
-	uv export --format requirements-txt > requirements-dev.txt
-	@echo "# This file is auto-generated from pyproject.toml (includes dev dependencies)" > temp_req.txt
-	@echo "# Do not edit manually - run 'make export-dev-requirements' to update" >> temp_req.txt
-	@echo "# Or use 'uv export --format requirements-txt > requirements-dev.txt'" >> temp_req.txt
-	@echo "" >> temp_req.txt
-	@cat requirements-dev.txt >> temp_req.txt
-	@mv temp_req.txt requirements-dev.txt
-	@echo "✓ Exported all requirements to requirements-dev.txt"
+export-requirements: ## Export requirements.txt from backend pyproject.toml for Docker/CI compatibility
+	cd backend && uv export --no-dev --format requirements-txt > requirements.txt
+	@echo "# This file is auto-generated from pyproject.toml" > backend/temp_req.txt
+	@echo "# Do not edit manually - run 'make export-requirements' to update" >> backend/temp_req.txt
+	@echo "# Or use 'uv export --no-dev --format requirements-txt > requirements.txt'" >> backend/temp_req.txt
+	@echo "" >> backend/temp_req.txt
+	@cat backend/requirements.txt >> backend/temp_req.txt
+	@mv backend/temp_req.txt backend/requirements.txt
+	@echo "✓ Exported production requirements to backend/requirements.txt"
+
+export-dev-requirements: ## Export all requirements (including dev) to backend requirements-dev.txt
+	cd backend && uv export --format requirements-txt > requirements-dev.txt
+	@echo "# This file is auto-generated from pyproject.toml (includes dev dependencies)" > backend/temp_req.txt
+	@echo "# Do not edit manually - run 'make export-dev-requirements' to update" >> backend/temp_req.txt
+	@echo "# Or use 'uv export --format requirements-txt > requirements-dev.txt'" >> backend/temp_req.txt
+	@echo "" >> backend/temp_req.txt
+	@cat backend/requirements-dev.txt >> backend/temp_req.txt
+	@mv backend/temp_req.txt backend/requirements-dev.txt
+	@echo "✓ Exported all requirements to backend/requirements-dev.txt"
 
 clean: ## Clean up temporary files and caches
 	rm -rf .pytest_cache/

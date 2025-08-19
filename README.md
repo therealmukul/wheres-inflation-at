@@ -1,6 +1,6 @@
-# Python Web Service Template
+# Backend-Frontend Reorganized Project
 
-A production-ready Python web service template built with FastAPI. This template provides a solid foundation for building REST APIs with essential features like health checks, CRUD operations, proper error handling, and comprehensive testing.
+A reorganized project structure separating backend and frontend concerns. The backend is a production-ready Python web service built with FastAPI, while the frontend directory is prepared for modern web application development.
 
 ## Features
 
@@ -54,21 +54,29 @@ cp .env.example .env
 
 The project uses `pyproject.toml` for dependency management and project configuration. Dependencies are automatically installed when you run `uv sync`.
 
-### Running the Service
+### Running the Services
 
-#### Development Mode
+#### Backend Development Mode
 ```bash
-uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Using make (recommended)
+make backend-run
+
+# Or directly with uv
+cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-#### Production Mode
+#### Backend Production Mode
 ```bash
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+cd backend && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-#### Using the convenience script
+#### Using Docker Compose
 ```bash
-./activate.sh
+# Run backend service
+docker-compose up backend
+
+# Run all services
+docker-compose up
 ```
 
 ### API Documentation
@@ -91,28 +99,32 @@ Once the service is running, you can access:
 ## Project Structure
 
 ```
-├── app/
-│   ├── __init__.py
-│   ├── main.py              # Application entry point
-│   ├── config.py            # Configuration management
-│   ├── models/
+├── backend/                 # FastAPI backend service
+│   ├── app/
 │   │   ├── __init__.py
-│   │   └── health.py        # Pydantic models
-│   ├── routers/
+│   │   ├── main.py          # Application entry point
+│   │   ├── config.py        # Configuration management
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   └── health.py    # Pydantic models
+│   │   ├── routers/
+│   │   │   ├── __init__.py
+│   │   │   └── health.py    # Health check endpoints
+│   │   └── utils/
+│   │       ├── __init__.py
+│   │       ├── logging.py   # Logging configuration
+│   │       └── exceptions.py # Custom exceptions
+│   ├── tests/
 │   │   ├── __init__.py
-│   │   └── health.py        # Health check endpoints
-│   └── utils/
-│       ├── __init__.py
-│       ├── logging.py       # Logging configuration
-│       └── exceptions.py    # Custom exceptions
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py          # Pytest fixtures
-│   └── test_health.py       # Health endpoint tests
-├── .env.example             # Environment variables template
-├── pyproject.toml           # Project configuration and dependencies
-├── uv.lock                  # Lock file for reproducible builds
-├── requirements.txt         # Dependencies (exported for compatibility)
+│   │   ├── conftest.py      # Pytest fixtures
+│   │   └── test_health.py   # Health endpoint tests
+│   ├── pyproject.toml       # Backend dependencies and config
+│   ├── requirements.txt     # Backend dependencies (exported)
+│   ├── Dockerfile           # Backend Docker configuration
+│   └── README.md           # Backend documentation
+├── frontend/                # Frontend application (to be implemented)
+├── docker-compose.yml       # Multi-service orchestration
+├── Makefile                # Development commands
 └── README.md               # This file
 ```
 
@@ -140,28 +152,34 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:8080
 
 ## Testing
 
-Run the test suite:
+Run the backend test suite:
 
 ```bash
-# Run all tests
-uv run pytest
+# Run all backend tests using make
+make test
+
+# Or run directly
+cd backend && uv run pytest
 
 # Run with coverage
-uv run pytest --cov=app
+cd backend && uv run pytest --cov=app
 
 # Run specific test file
-uv run pytest tests/test_health.py
+cd backend && uv run pytest tests/test_health.py
 
 # Run with verbose output
-uv run pytest -v
+cd backend && uv run pytest -v
 ```
 
 ## Development
 
 ### Dependency Management
 
-Add new dependencies:
+Add new backend dependencies:
 ```bash
+# Navigate to backend directory
+cd backend
+
 # Add a production dependency
 uv add fastapi
 
